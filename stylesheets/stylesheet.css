@@ -6,11 +6,5 @@ html, body {
 canvas {
   border:1px solid #d3d3d3;
   display: block;
-  position: relative;
-  top: 1;
-  left: 1;
-  right: 1;
-  bottom: 1;
-  width: 100%;
-  height: 80%;
+  position: flex;
 }

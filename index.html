@@ -2,14 +2,16 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
-		<script src="javascripts/main.js"></script>
 	</head>
-	<body onload="javascripts/main();">
-		<textarea id="text" value="input Text" rows="4" cols="50"></textarea>
+
+	<body onload="javascripts/main.js">
+		<textarea id="text" value="input Text" rows="4" cols="50" oninput="draw()">input text here</textarea>
 		<form id="inputForm">
-			<input type="button" id="generate" value="generate"/>
-			<input type="button" id="save" value="save"/>
+			<input type="button" id="generate" value="generate" onClick="draw()"/>
+			<input type="button" id="save" value="save" onClick="saveImg()"/>
 		</form>
 		<canvas id="renderWindow">Your browser does not support the HTML5 canvas tag.</canvas>
+		<script src="javascripts/main.js" type="text/javascript" id="main"></script>
+		<script src="canvasSaver.js"></script>
 	</body>
 </html>

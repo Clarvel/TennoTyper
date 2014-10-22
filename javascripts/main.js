@@ -1,7 +1,29 @@
-function main(){
-	var border = 1000;
-	var canvas = document.getElementById("renderWindow");
-	canvas.width = window.innerWidth-border;
-	canvas.height = window.innerHeight-border;
+
+var c = document.getElementById("renderWindow");
+reSize();
+var ctx = c.getContext("2d");
+var text = document.getElementById("text");
+var generate = document.getElementById("generate");
+var save = document.getElementById("save");
+
+function draw(){
+	reSize();
+	ctx.fillText(text.value, 300, 300);
+	ctx.fillText(generate.value, 200, 200);
+	ctx.fillText(save.value, 100, 100);
 }
-main();
+
+function reSize(){
+	c.width = (window.innerWidth-10);
+	c.height = (window.innerHeight-100);
+}
+
+function saveImg(){
+	var d=c.toDataURL("image/png");
+	var w=window.open('about:blank','image from canvas');
+	w.document.write("<img src='"+d+"' alt='from canvas'/>");
+}
+
+
+
+draw();
