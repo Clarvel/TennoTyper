@@ -173,8 +173,8 @@ function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position,
 	// trig so that images touch when drawn
 	if(vowel){
 		ctx.translate(pos[0], pos[1] - img.height);
-			ctx.rect(0, 0, img.width, img.height);
-			ctx.stroke();
+			//ctx.rect(0, 0, img.width, img.height);
+			//ctx.stroke();
 			ctx.drawImage(img, 0, 0);
 		ctx.translate(-pos[0], -(pos[1] - img.height));
 		pos[0] += img.width;
@@ -193,8 +193,8 @@ function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position,
 		var yMod = (xMod / Math.tan(rotation));
 		ctx.translate(pos[0] - xMod, pos[1] - yMod);
 		ctx.rotate(rotation);
-			ctx.rect(0, 0, img.width, img.height);
-			ctx.stroke()
+			//ctx.rect(0, 0, img.width, img.height);
+			//ctx.stroke()
 			ctx.drawImage(img, 0, 0);
 		ctx.rotate(-rotation);
 		ctx.translate(-(pos[0] - xMod), -(pos[1] - yMod));
