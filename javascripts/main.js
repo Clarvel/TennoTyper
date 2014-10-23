@@ -13,8 +13,7 @@ chars[chars.length] = '\n';
 //alterScale();
 var rotation = (45 * (Math.PI/180));
 var lineHeight = 175;
-var lineSpacing = 30;
-var vowelClearance = 20;
+var lineSpacing = 60;
 var initX = 50;
 var initY = 100;
 
@@ -150,9 +149,11 @@ function placeImages(array){ // place images on canvas
 			case (chars.length-1): // newline
 				pos[1] += lineHeight;
 				pos[0] = initX;
+				prevVowelLength[0] = 0;
 				break;
 			case (chars.length-2): // space char
 				pos[0] += lineSpacing;
+				prevVowelLength[0] = 0;
 				break;
 			case chars.indexOf('a'):
 			case chars.indexOf('e'):
