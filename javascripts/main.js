@@ -20,8 +20,9 @@ var initY = 50;
 
 function draw(){
 	reSize();
-	ctx.fillText(text.value, 2, 10);
+	//ctx.fillText(text.value, 2, 10);
 	var refArray = format(text.value);
+	ctx.font = "20pt Optima";
 	ctx.fillText(strFromParse(refArray), 2, 30);
 	placeImages(refArray);
 }
