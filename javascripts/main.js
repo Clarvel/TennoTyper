@@ -9,14 +9,14 @@ var images = loadImages(chars);
 chars[chars.length] = ' ';
 chars[chars.length] = '\n';
 
-var scale;
-alterScale();
-var rotation = 45 * (Math.PI/180);
+//var scale;
+//alterScale();
+var rotation = (45 * (Math.PI/180));
 var lineHeight = 175;
 var lineSpacing = 30;
 var vowelClearance = 20;
 var initX = 50;
-var initY = 50;
+var initY = 100;
 
 function draw(){
 	reSize();
@@ -38,11 +38,11 @@ function saveImg(){
 	w.document.write("<img src='"+d+"' alt='from canvas'/>");
 }
 
-function alterScale(){
+/*function alterScale(){
 	ctx.scale(1/scale, 1/scale);
 	scale = document.getElementById("scale").value / 100.0;
 	ctx.scale(scale, scale);
-}
+}*/
 
 function alterRotation(){
 	rotation = document.getElementById("rotation").value  * (Math.PI/180);
@@ -144,8 +144,8 @@ function makeRegexes(){
 
 function placeImages(array){ // place images on canvas
 	var pos = [initX, initY]; // x, y pos of drawing vector
+	var prevVowelLength = [0]; // was previous char a consonant?
 	for(var i = 0; i < array.length; i++){
-		var vowel = false;
 		switch(array[i]){
 			case (chars.length-1): // newline
 				pos[1] += lineHeight;
@@ -161,34 +161,50 @@ function placeImages(array){ // place images on canvas
 			case chars.indexOf('o'):
 			case chars.indexOf('u'):
 			case chars.indexOf('w'):
-				vowel = true;
+				placeImg(images[array[i]], pos, true, prevVowelLength);
+				break;
 			default:
-				// trig so that images touch when drawn
-				var offset = images[array[i]].width;
-				var overhang = offset;
-				var clearance = -offset;
-				if(!vowel){
-					offset = images[array[i]].height / Math.sin(rotation);
-					overhang = images[array[i]].width * Math.cos(rotation);
-					clearance = 0;
-					pos[0] += offset;
-
-				}
-				if(pos[0] + overhang > c.width){ // deal with text wrapping
-					pos[1] += lineHeight;
-					pos[0] = initX;
-				}
-				placeSingleImage(images[array[i]], pos[0], pos[1], rotation, clearance);
+				placeImg(images[array[i]], pos, false, prevVowelLength);
 		}
 	}
 }
 
-function placeSingleImage(img, x, y, rot, off){ // image, xpos, ypos, rotation, offset from 0(for vowels it'll be -image.width)
-	//ctx.scale(scale, scale);
-	ctx.translate(x, y);
-	ctx.rotate(rot);
-	ctx.drawImage(img, off, 0);
-	ctx.rotate(-rot);
-	ctx.translate(-x, -y);
-	//ctx.scale(1/scale, 1/scale);
+function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position, is the char a vowel, was the previous char a consonant
+	// trig so that images touch when drawn
+	if(vowel){
+		ctx.translate(pos[0], pos[1] - img.height);
+			ctx.rect(0, 0, img.width, img.height);
+			ctx.stroke();
+			ctx.drawImage(img, 0, 0);
+		ctx.translate(-pos[0], -(pos[1] - img.height));
+		pos[0] += img.width;
+		prevVowelLength[0] += img.width;
+	}else{
+		var offset = img.height / Math.sin(rotation);
+		var mod = 0;
+		if(prevVowelLength[0] != 0 && prevVowelLength[0] < (offset / 2)){
+			mod = ((offset / 2) - prevVowelLength[0]) * Math.cos(rotation) * Math.cos(rotation);
+		}
+		console.log("mod: " + pos[0] + ' ' + mod + ' ' + offset + '\n');
+		pos[0] += (offset - prevVowelLength[0]);
+		console.log("pos: " + pos[0] + '\n');
+
+		var xMod = ((offset - img.height * Math.sin(rotation)) / 2) + mod;
+		var yMod = (xMod / Math.tan(rotation));
+		ctx.translate(pos[0] - xMod, pos[1] - yMod);
+		ctx.rotate(rotation);
+			ctx.rect(0, 0, img.width, img.height);
+			ctx.stroke()
+			ctx.drawImage(img, 0, 0);
+		ctx.rotate(-rotation);
+		ctx.translate(-(pos[0] - xMod), -(pos[1] - yMod));
+		prevVowelLength[0] = 0;
+	}
+
+	/*if(pos[0] + overhang > c.width){ // deal with text wrapping
+		pos[1] += lineHeight;
+		pos[0] = initX;
+	}*/
 }
+
+
