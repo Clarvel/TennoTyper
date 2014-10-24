@@ -13,8 +13,8 @@ chars[chars.length] = '\n';
 //alterScale();
 var rotation = (45 * (Math.PI/180));
 var lineHeight = 175;
-var lineSpacing = 60;
-var initX = 50;
+var lineSpacing = 50;
+var initX = 25;
 var initY = 100;
 
 function draw(){
@@ -173,6 +173,10 @@ function placeImages(array){ // place images on canvas
 function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position, is the char a vowel, was the previous char a consonant
 	// trig so that images touch when drawn
 	if(vowel){
+		if(pos[0] + img.width > c.width){ // deal with text wrapping
+			pos[1] += lineHeight;
+			pos[0] = initX;
+		}
 		ctx.translate(pos[0], pos[1] - img.height);
 			//ctx.rect(0, 0, img.width, img.height);
 			//ctx.stroke();
@@ -186,6 +190,12 @@ function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position,
 		if(prevVowelLength[0] != 0 && prevVowelLength[0] < (offset / 2)){
 			mod = ((offset / 2) - prevVowelLength[0]) * Math.cos(rotation) * Math.cos(rotation);
 		}
+
+		if(pos[0] + ((img.width + img.height) * Math.cos(rotation)) > c.width){ // deal with text wrapping
+			pos[1] += lineHeight;
+			pos[0] = initX;
+		}*/
+
 		console.log("mod: " + pos[0] + ' ' + mod + ' ' + offset + '\n');
 		pos[0] += (offset - prevVowelLength[0]);
 		console.log("pos: " + pos[0] + '\n');
@@ -201,11 +211,6 @@ function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position,
 		ctx.translate(-(pos[0] - xMod), -(pos[1] - yMod));
 		prevVowelLength[0] = 0;
 	}
-
-	/*if(pos[0] + overhang > c.width){ // deal with text wrapping
-		pos[1] += lineHeight;
-		pos[0] = initX;
-	}*/
 }
 
 
