@@ -194,7 +194,7 @@ function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position,
 		if(pos[0] + ((img.width + img.height) * Math.cos(rotation)) > c.width){ // deal with text wrapping
 			pos[1] += lineHeight;
 			pos[0] = initX;
-		}*/
+		}
 
 		console.log("mod: " + pos[0] + ' ' + mod + ' ' + offset + '\n');
 		pos[0] += (offset - prevVowelLength[0]);
