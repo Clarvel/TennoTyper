@@ -1,216 +1,214 @@
-
+//global variables
 var c = document.getElementById("renderWindow");
 var ctx = c.getContext("2d");
 
 var text = document.getElementById("text");
-var chars = makeArray("a, b, c, d, e, f, g, h, i, io, j, l, m, n, o, p, r, s, t, u, v, w");
-var images = loadImages(chars);
-//once images loaded, add in spacing
-chars[chars.length] = ' ';
-chars[chars.length] = '\n';
+var language = document.getElementById("language");
 
-//var scale;
-//alterScale();
-var rotation = (45 * (Math.PI/180));
-var lineHeight = 175;
-var lineSpacing = 50;
-var initX = 25;
-var initY = 100;
+var js = {
+	path: "./javascripts/",
+	ext: ".js",
+};
 
-function draw(){
-	reSize();
-	//ctx.fillText(text.value, 2, 10);
-	var refArray = format(text.value);
-	ctx.font = "20pt Optima";
-	ctx.fillText(strFromParse(refArray), 2, 30);
-	placeImages(refArray);
+var offset = {
+	xOffset: 5,
+	yOffset: 5.
 }
 
-function reSize(){
+//html callbacks
+/*-------------------------------------------------*/
+
+function draw(){
+	resize();
+	//clearCanvas();
+	var str = text.value.toLowerCase();
+	//ctx.font = "20pt Optima";
+	//ctx.fillText(str, 2, 30);
+	switch(language.value){
+		case "corpus":
+			placeString(ctx, str, corpus);
+			break;
+		case "grineer":
+			placeString(ctx, str, grineer);
+			break;
+		case "tenno":
+			placeString(ctx, str, tenno);
+	}
+}
+
+function clearCanvas(){
+	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+}
+
+function resize(){
 	c.width = (window.innerWidth-10);
 	c.height = (window.innerHeight-100);
 }
 
 function saveImg(){
-	var d=c.toDataURL("image/png");
-	var w=window.open('about:blank','image from canvas');
-	w.document.write("<img src='"+d+"' alt='from canvas'/>");
+	try{
+		var d=c.toDataURL("image/png");
+		var w=window.open('about:blank','image from canvas');
+		w.document.write("<img src='"+d+"' alt='from canvas'/>");
+	}catch(error){
+		console.log("Could not save canvas.");
+		alert("Could not save image:\n" + error);
+	}
 }
 
-/*function alterScale(){
-	ctx.scale(1/scale, 1/scale);
-	scale = document.getElementById("scale").value / 100.0;
-	ctx.scale(scale, scale);
-}*/
 
-function alterRotation(){
-	rotation = document.getElementById("rotation").value  * (Math.PI/180);
-}
+//grineer
+/*-------------------------------------------------*/
 
-function loadImages(imageArray){
-    var imageObj = [];
-    for(var i = 0; i < imageArray.length; i++) {
-    	imageObj[imageObj.length] = new Image();
-        //document.write('<img src="' + imageArray[i] + '" />');// Write to page (uncomment to check images)
-        imageObj[imageObj.length-1].src="./images/tennoScript/" + imageArray[i] + ".png";
-    }
-    return imageObj;
-}
+var grineer = new function(){
+	this.folder = "./images/grineer/";
+	this.pre = 'g';
+	this.ext = ".svg";
+	this.centered = false;
 
-function makeArray(str){
-	tmp = [];
-	tmp = str.split(', ');
-	return tmp;
-}
+	this.spacing = {
+		LineHeight: 70,
+		SpaceWidth: 15,
+		LetterSpacing: 3,
+	};
 
-function format(str){ // return array of indexes to chars
-	var tmp = [];
-	str = str.toLowerCase();
-	for(var i = 0; i < str.length; i++){ // for each char in str add that char's index to array
-		if(i == 0 || chars[tmp[tmp.length-1]] != str[i]){// if duplicate value, skip it
-			var add = ''; // char to add to array
-			switch(str[i]){ // choose value
-				case 'k':
-					add = 'c';
-					break;
-				case 'y':
-					add = 'w';
-					break;
-				case 'z':
-				case 'x':
-					add = 's';
-					break;
-				case 'i':
-					if(i < str.length-1){
-						if(str[i+1] == 'o'){
-							add = 'io';
-							i++;
-							break;
-						}
-					}
-				case 'a':
-				case 'b':
-				case 'c':
-				case 'd':
-				case 'e':
-				case 'f':
-				case 'g':
-				case 'h':
-				case 'j':
-				case 'l':
-				case 'm':
-				case 'n':
-				case 'o':
-				case 'p':
-				case 'r':
-				case 's':
-				case 't':
-				case 'u':
-				case 'v':
-				case 'w':
-				case ' ':
-				case '\n':
-					add = str[i];
-				default:
-					break;
-			}
-			if(add != ''){
-				tmp[tmp.length] = chars.indexOf(add);
+	this.imgs = [];
+	this.chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', 'z', "Question", "Period", "Comma", '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+	for(var index = 0; index < this.chars.length; index += 1){ // gets images and puts them in imgs table
+		if(this.chars[index] == "Question"){
+			this.imgs['?'] = new Image();
+			this.imgs['?'].src = this.folder + this.pre + this.chars[index] + this.ext;
+		}else if(this.chars[index] == "Period"){
+			this.imgs['.'] = new Image();
+			this.imgs['.'].src = this.folder + this.pre + this.chars[index] + this.ext;
+		}else if(this.chars[index] == "Comma"){
+			this.imgs[','] = new Image();
+			this.imgs[','].src = this.folder + this.pre + this.chars[index] + this.ext;
+		}else{
+			this.imgs[this.chars[index]] = new Image();
+			this.imgs[this.chars[index]].src = this.folder + this.pre + this.chars[index] + this.ext;
+		}
+	}
+
+
+	this.placeWord = function(ctx, word){ // place left aligned images
+		var offset = 0;
+		var img;
+		for(letter in word){
+			img = this.imgs[word[letter]];
+			if(img != undefined){
+				ctx.drawImage(img, offset, 0);
+				offset += (img.width + this.spacing.LetterSpacing);
 			}
 		}
 	}
-	return tmp;
-}
 
-function strFromParse(parse){
-	var str = '';
-	for(var i = 0; i < parse.length; i++){
-		str += chars[parse[i]];
-	}
-	return str;
-}
-
-function makeRegexes(){
-	var output;
-	output.space = / /;
-	output.newLine = /\n/;
-	output.word = /[a-z]+/i;
-	output.tenno = /[abcdefghijklmnoprstuvw]+/;
-	output.vowels = /[aeiouy]/;
-	output.consonants = /[^aeiouy \n]/;
-	return output;
-}
-
-function placeImages(array){ // place images on canvas
-	var pos = [initX, initY]; // x, y pos of drawing vector
-	var prevVowelLength = [0]; // was previous char a consonant?
-	for(var i = 0; i < array.length; i++){
-		switch(array[i]){
-			case (chars.length-1): // newline
-				pos[1] += lineHeight;
-				pos[0] = initX;
-				prevVowelLength[0] = 0;
-				break;
-			case (chars.length-2): // space char
-				pos[0] += lineSpacing;
-				prevVowelLength[0] = 0;
-				break;
-			case chars.indexOf('a'):
-			case chars.indexOf('e'):
-			case chars.indexOf('i'):
-			case chars.indexOf('io'):
-			case chars.indexOf('o'):
-			case chars.indexOf('u'):
-			case chars.indexOf('w'):
-				placeImg(images[array[i]], pos, true, prevVowelLength);
-				break;
-			default:
-				placeImg(images[array[i]], pos, false, prevVowelLength);
+	this.getWordLength = function(word){
+		var len = 0;
+		var img;
+		for(letter in word){
+			//console.log("word:" + word + " letter:" + letter + " letterVal:" + word[letter] + " img:" + this.imgs[word[letter]] + " imgLen:" + this.imgs[word[letter]].width);
+			img = this.imgs[word[letter]];
+			if(img != undefined){
+				len += (img.width + this.spacing.LetterSpacing);
+			}
 		}
-	}
-}
-
-function placeImg(img, pos, vowel, prevVowelLength){ // image, drawing position, is the char a vowel, was the previous char a consonant
-	// trig so that images touch when drawn
-	if(vowel){
-		if(pos[0] + img.width > c.width){ // deal with text wrapping
-			pos[1] += lineHeight;
-			pos[0] = initX;
-		}
-		ctx.translate(pos[0], pos[1] - img.height);
-			//ctx.rect(0, 0, img.width, img.height);
-			//ctx.stroke();
-			ctx.drawImage(img, 0, 0);
-		ctx.translate(-pos[0], -(pos[1] - img.height));
-		pos[0] += img.width;
-		prevVowelLength[0] += img.width;
-	}else{
-		var offset = img.height / Math.sin(rotation);
-		var mod = 0;
-		if(prevVowelLength[0] != 0 && prevVowelLength[0] < (offset / 2)){
-			mod = ((offset / 2) - prevVowelLength[0]) * Math.cos(rotation) * Math.cos(rotation);
-		}
-
-		if(pos[0] + ((img.width + img.height) * Math.cos(rotation)) > c.width){ // deal with text wrapping
-			pos[1] += lineHeight;
-			pos[0] = initX;
-		}
-
-		console.log("mod: " + pos[0] + ' ' + mod + ' ' + offset + '\n');
-		pos[0] += (offset - prevVowelLength[0]);
-		console.log("pos: " + pos[0] + '\n');
-
-		var xMod = ((offset - img.height * Math.sin(rotation)) / 2) + mod;
-		var yMod = (xMod / Math.tan(rotation));
-		ctx.translate(pos[0] - xMod, pos[1] - yMod);
-		ctx.rotate(rotation);
-			//ctx.rect(0, 0, img.width, img.height);
-			//ctx.stroke()
-			ctx.drawImage(img, 0, 0);
-		ctx.rotate(-rotation);
-		ctx.translate(-(pos[0] - xMod), -(pos[1] - yMod));
-		prevVowelLength[0] = 0;
+		return len;
 	}
 }
 
 
+//corpus
+/*-------------------------------------------------*/
+
+var corpus = new function(){
+	this.folder = "./images/corpus/";
+	this.pre = 'c';
+	this.ext = ".svg";
+	this.centered = true;
+
+	this.spacing = {
+		LineHeight: 70,
+		SpaceWidth: 20,
+		LetterSpacing: 5,
+	};
+
+	this.imgs = [];
+	this.chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y'];
+	for(var index = 0; index < this.chars.length; index += 1){ // gets images and puts them in imgs table
+		this.imgs[this.chars[index]] = new Image();
+		this.imgs[this.chars[index]].src = this.folder + this.pre + this.chars[index] + this.ext;
+	}
+
+
+	this.placeWord = function(ctx, word){ // place left aligned images
+		var offset = 0;
+		var img;
+		for(letter in word){
+			img = this.imgs[word[letter]];
+			if(img != undefined){
+				ctx.drawImage(img, offset, 0);
+				offset += (img.width + this.spacing.LetterSpacing);
+			}
+		}
+	}
+
+	this.getWordLength = function(word){
+		var len = 0;
+		var img;
+		for(letter in word){
+			//console.log("word:" + word + " letter:" + letter + " letterVal:" + word[letter] + " img:" + this.imgs[word[letter]] + " imgLen:" + this.imgs[word[letter]].width);
+			img = this.imgs[word[letter]];
+			if(img != undefined){
+				len += (img.width + this.spacing.LetterSpacing);
+			}
+		}
+		return len;
+	}
+}
+
+
+
+//main functionality
+/*-------------------------------------------------*/
+
+function placeString(ctx, string, lanClass){ // should be global drawng function
+	var lines = string.split('\n');
+	var lineIndex;
+
+	ctx.translate(offset.xOffset, offset.yOffset); // initial offset
+
+	for(lineIndex = 0; lineIndex < lines.length; lineIndex += 1){ // for each line
+		placeLine(ctx, lines[lineIndex], lanClass); // draw line
+		ctx.translate(0, lanClass.spacing.LineHeight); // move to next line
+	}
+	ctx.translate(-offset.xOffset, -(offset.yOffset + lineIndex * lanClass.spacing.LineHeight)); // undo initial offset and lineHeight changes, possibly unnecisary
+}
+
+function placeLine(ctx, string, lanClass){
+	var words = string.split(' ');
+
+	var lineLength = 0; // keep track of this for translations b/c letters not all same length
+	for(var a = 0; a < words.length; a++){
+		lineLength += (lanClass.getWordLength(words[a]) + lanClass.spacing.SpaceWidth);
+	}
+
+	var initOffset = 0;
+	if(lanClass.centered){
+		initOffset = (c.width - lineLength) / 2;
+	}
+	ctx.translate(initOffset, 0);
+
+	for(var wordsIndex = 0; wordsIndex < words.length; wordsIndex += 1){ // for each word in that line
+		var wordLength = lanClass.getWordLength(words[wordsIndex]) + lanClass.spacing.SpaceWidth;
+
+		lanClass.placeWord(ctx, words[wordsIndex]); // place images
+
+		ctx.translate(wordLength, 0); // translate past word position
+	}
+	ctx.translate(-(lineLength + initOffset), 0); // make newLine
+}
+
+
+
+//TENNO	this.chars = ['ee', 'ih', 'eh', 'a', 'aw', 'uh', 'o', 'oo', 'ae', 'aye', 'ow', 'p', 'b', 't', 'd', 's', 'z', 'j', 'k', 'g', 'f', 'v', 'th', 'dh', 'sh', 'zh', 'ch', 'kh', 'm', 'n', 'h', 'r', 'l', 'ng', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];

@@ -4,11 +4,30 @@
 		<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
 	</head>
 
-	<body onload="draw()">
-		<img src="images/warframeLogo.png">
-		<textarea id="text" placeholder="Input Text Here" rows="4" cols="50" oninput="draw()"></textarea>
-			<button type="button" id="save" onClick="saveImg()">save</button>
+	<body>
+		<table>
+			<tr>
+				<td>
+					<img src="images/warframeLogo.png">
+				</td>
+				<td>
+					<textarea id="text" placeholder="Input Text Here" rows="4" cols="50" oninput="draw()" autofocus></textarea>
+				</td>
+				<td>
+					<select id="language" oninput="draw()">
+						<option value="grineer">Grineer</option>
+						<option value="tenno">Tenno</option>
+						<option value="corpus">Corpus</option>
+					</select>
+					<br>
+					<!--input type="checkbox" id="emphasis" value="1" onInput="draw()">Emphasis
+					<br-->
+					<button type="button" id="save" onClick="saveImg()">Save</button>
+				</td>
+			</tr>
+		</table>
 		<canvas id="renderWindow">Your browser does not support the HTML5 canvas tag.</canvas>
-		<script src="javascripts/main.js" type="text/javascript" id="main"></script>
+
+		<script src="javascripts/main.js" type="text/javascript" id="main" onload="resize()"></script>
 	</body>
 </html>

@@ -1,10 +1,14 @@
 html, body {
-  width:  99%;
-  height: 99%;
-  margin: 2px;
+	width:  99%;
+	height: 99%;
+	margin: 2px;
+	font-family: optima;
+	font-size: 87%;
 }
+
 canvas {
-  border:1px solid #d3d3d3;
-  display: block;
-  position: flex;
+	margin-top: 4px;
+	border: 1px solid #d3d3d3;
+	display: block;
+	position: flex;
 }
