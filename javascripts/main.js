@@ -374,8 +374,14 @@ var tenno = new function(){
 			var img = this.imgs[this.currWordArray[a]];
 			if(img != undefined){
 				if(find(this.currWordArray[a], this.misc)){ // if misc
+					var hOffset = this.spacing.LineHeight / 4;
 					if(prevCon){
-						length += img.height / Math.tan(this.rot); // consonant offset
+						if(this.currWordArray[a-1] == 'r'){
+							var rImg = this.imgs['r'];
+							length += rImg.width * Math.cos(this.rot) + img.height * Math.sin(this.rot);
+						}else{
+							length += (img.height + hOffset) / Math.tan(this.rot);
+						}
 						prevCon = false;
 					}
 					length += img.width;
@@ -471,6 +477,10 @@ var tenno = new function(){
 						break;
 					case 'w':
 						wordsArray.push('oo');
+						if(word[a+1] == 'a'){
+							wordsArray.push('o');
+							a++;
+						}
 						b = false;
 						break;
 					case 'y':
