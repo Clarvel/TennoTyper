@@ -25,6 +25,8 @@
 						<option value="grineer">Grineer</option>
 					</select>
 					<br>
+					<input type="checkbox" id="background" value="false" onclick="backG()">Background
+					<br>
 					<!--input type="checkbox" id="logo" value="1" onInput="draw()">Race Logo
 					<br-->
 					<!--input type="button" id="displayGuide" onInput="displayGuide()">Show Guide
@@ -37,6 +39,6 @@
 		</table>
 		<canvas id="renderWindow">Your browser does not support the HTML5 canvas tag.</canvas>
 
-		<script src="javascripts/main.js" type="text/javascript" id="main" onload="resize()"></script>
+		<script src="javascripts/main.js" type="text/javascript" id="main" onload="loaded()"></script>
 	</body>
 </html>

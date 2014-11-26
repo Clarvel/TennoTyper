@@ -14,6 +14,7 @@ var offset = {
 	xOffset: 0,
 	yOffset: 0,
 }
+var background = false;
 
 //html callbacks
 /*-------------------------------------------------*/
@@ -39,6 +40,15 @@ function draw(){
 function resize(){
 	c.width = offset.xOffset;//(window.innerWidth-10);
 	c.height = offset.yOffset;//(window.innerHeight-80);
+}
+
+function loaded(){
+	resize();
+}
+
+function backG(){
+	background = !background;
+	draw();
 }
 
 function saveImg(){
@@ -79,7 +89,11 @@ function placeString(ctx, string, lanClass){
 	var xOff = 0;
 	var yOff = 0;
 
+	ctx.fillStyle = "white";
 	ctx.rect(0, 0, txt.w, txt.h);
+	if(background == true){
+		ctx.fill();
+	}
 	for(var a = 0; a < txt.lines.length; a++){ // for each line
 		var line = txt.lines[a];
 
