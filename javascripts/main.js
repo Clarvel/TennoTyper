@@ -679,12 +679,14 @@ var tenno = new function(){
 								a++;
 								break;
 							case 'o':
-								if(word.length == 3 && word[2] == 'u'){
-									wordsArray.push('ee');
-									wordsArray.push('oo');
-									wordsArray.push('h');
-									a = word.length;
-									break;
+								if(a < word.length-2 && word[a+2] == 'u'){
+									if(word.length == 3 || find(word[a+3], this.misc)){
+										wordsArray.push('ee');
+										wordsArray.push('oo');
+										wordsArray.push('h');
+										a += 2;
+										break;
+									}
 								}
 							default:
 								wordsArray.push('ee');
@@ -814,10 +816,12 @@ var tenno = new function(){
 					case 't':
 						if(word[a+1] == 'h'){
 							wordsArray.push('th');
-							if(word.length == 3 && word[a+2] == 'e'){
-								wordsArray.push('u');
-								wordsArray.push('h');
-								a++;
+							if(a < word.length-2 && word[a+2] == 'e'){
+								if(word.length == 3 || find(word[a+3], this.misc)){
+									wordsArray.push('u');
+									wordsArray.push('h');
+									a++;
+								}
 							}
 							a++;
 							b = false;
