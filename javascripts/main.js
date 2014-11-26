@@ -11,15 +11,15 @@ var js = {
 };
 
 var offset = {
-	xOffset: 20,//5,
-	yOffset: 20,//5,
+	xOffset: 0,
+	yOffset: 0,
 }
 
 //html callbacks
 /*-------------------------------------------------*/
 
 function draw(){
-	resize();
+	//resize();
 	//clearCanvas();
 	var str = text.value.toLowerCase();
 	//ctx.font = "20pt Optima";
@@ -36,13 +36,9 @@ function draw(){
 	}
 }
 
-function clearCanvas(){
-	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-}
-
 function resize(){
-	c.width = (window.innerWidth-10);
-	c.height = (window.innerHeight-100);
+	c.width = offset.xOffset;//(window.innerWidth-10);
+	c.height = offset.yOffset;//(window.innerHeight-80);
 }
 
 function saveImg(){
@@ -68,41 +64,102 @@ function find(item, array){
 	return false;
 }
 
-function placeString(ctx, string, lanClass){ // should be global drawng function
-	var lines = string.split('\n');
-	var lineIndex;
+/*
+	isolate each word
+	calculate required canvas size, and draw
+	call required drawing functions
+*/
+function placeString(ctx, string, lanClass){
+	var txt = new Paragraph(string, lanClass);
 
-	ctx.translate(offset.xOffset, offset.yOffset); // initial offset
+	resize();
+	c.width = Math.ceil(txt.w);
+	c.height = Math.ceil(txt.h);
 
-	for(lineIndex = 0; lineIndex < lines.length; lineIndex += 1){ // for each line
-		placeLine(ctx, lines[lineIndex], lanClass); // draw line
-		ctx.translate(0, lanClass.spacing.LineHeight); // move to next line
+	var xOff = 0;
+	var yOff = 0;
+
+	ctx.rect(0, 0, txt.w, txt.h);
+	for(var a = 0; a < txt.lines.length; a++){ // for each line
+		var line = txt.lines[a];
+
+		var initOff = 0; // left aligned or centered
+		if(lanClass.centered){
+			initOff = (c.width - line.w) / 2;
+		}
+		ctx.translate(initOff, 0);
+		ctx.rect(xOff, yOff + line.yIM, line.w, 0); // show drawline
+		ctx.rect(xOff, yOff, line.w, line.h);
+
+		for(var b = 0; b < line.words.length; b++){ // for each word
+			var word = line.words[b];
+			var hOff = line.yIM - word.yI
+
+			ctx.translate(xOff, yOff + hOff);
+			ctx.rect(0, 0, word.w, word.h);
+			lanClass.placeWord(ctx, word.str);
+			ctx.translate(-xOff, -(yOff + hOff));
+
+			xOff += word.w + lanClass.spacing.SpaceWidth;
+		}
+
+		ctx.translate(-initOff, 0);
+
+		yOff += line.h + lanClass.spacing.LineHeight;
+		xOff = 0;
 	}
-	ctx.translate(-offset.xOffset, -(offset.yOffset + lineIndex * lanClass.spacing.LineHeight)); // undo initial offset and lineHeight changes, possibly unnecisary
+
+	if(debug){
+		ctx.stroke(); // for rect bounding boxes
+	}
 }
 
-function placeLine(ctx, string, lanClass){
-	var words = string.split(' ');
+function Word(str, w, h, yI){ // basic word class
+	this.str = str;
+	this.w = w;
+	this.h = h;
+	this.yI = yI; // individual y initial offset
+}
 
-	var lineLength = 0; // keep track of this for translations b/c letters not all same length
-	for(var a = 0; a < words.length; a++){
-		lineLength += (lanClass.getWordLength(words[a]) + lanClass.spacing.SpaceWidth);
+function Line(str, lanClass){
+	var array = str.split(' '); // make array of words for each line
+	this.words = [];
+	this.w = 0;
+	this.h = 0;
+	this.yIM = 0; // line l initial offset maximum
+	// instanciate words array and line width/height
+	for(var a = 0; a < array.length; a++){
+		this.words[a] = new Word(array[a], lanClass.getWordLength(array[a]), lanClass.getWordHeight(array[a]), lanClass.getWordHeightOffset(array[a]));
+		this.w += this.words[a].w + lanClass.spacing.SpaceWidth;
+
+		if(this.words[a].yI > this.yIM){ // find max offset
+			this.yIM = this.words[a].yI;
+		}
 	}
-
-	var initOffset = 0;
-	if(lanClass.centered){
-		initOffset = (c.width - lineLength) / 2;
+	this.w -= lanClass.spacing.SpaceWidth; // deal with extra width spacing
+	
+	for(var a = 0; a < this.words.length; a++){ // update line height
+		var pH = this.words[a].h + (this.yIM - this.words[a].yI);
+		if(pH > this.h){
+			this.h = pH;
+		}
 	}
-	ctx.translate(initOffset, 0);
+}
 
-	for(var wordsIndex = 0; wordsIndex < words.length; wordsIndex += 1){ // for each word in that line
-		var wordLength = lanClass.getWordLength(words[wordsIndex]) + lanClass.spacing.SpaceWidth;
-
-		lanClass.placeWord(ctx, words[wordsIndex]); // place images
-
-		ctx.translate(wordLength, 0); // translate past word position
+function Paragraph(str, lanClass){
+	var array = str.split('\n'); // make array of lines for the paragraph
+	this.lines = [];
+	this.w = 0;
+	this.h = 0;
+	//instansiate lines array and canvas width and height
+	for(var a = 0; a < array.length; a++){
+		this.lines[a] = new Line(array[a], lanClass);
+		if(this.lines[a].w > this.w){
+			this.w = this.lines[a].w;
+		}
+		this.h += this.lines[a].h + lanClass.spacing.LineHeight;
 	}
-	ctx.translate(-(lineLength + initOffset), 0); // make newLine
+	this.h -= lanClass.spacing.LineHeight; // deal with extra height spacing
 }
 
 //grineer
@@ -115,9 +172,9 @@ var grineer = new function(){
 	this.centered = false;
 
 	this.spacing = {
-		LineHeight: 70,
-		SpaceWidth: 15,
-		LetterSpacing: 3,
+		LineHeight: 15,
+		SpaceWidth: 20,
+		LetterSpacing: 5,
 	};
 
 	this.imgs = [];
@@ -149,6 +206,7 @@ var grineer = new function(){
 		for(letter in word){
 			img = this.imgs[word[letter]];
 			if(img != undefined){
+				ctx.rect(offset, 0, img.width, img.height);
 				ctx.drawImage(img, offset, 0);
 				offset += (img.width + this.spacing.LetterSpacing);
 			}
@@ -165,10 +223,25 @@ var grineer = new function(){
 				len += (img.width + this.spacing.LetterSpacing);
 			}
 		}
-		return len;
+		return (len - this.spacing.LetterSpacing);
+	}
+
+	this.getWordHeight = function(word){
+		var height = 0;
+		var img;
+		for(letter in word){
+			img = this.imgs[word[letter]];
+			if(img != undefined && img.height > height){
+				height = img.height;
+			}
+		}
+		return height;
+	}
+
+	this.getWordHeightOffset = function(word){
+		return 0;
 	}
 }
-
 
 //corpus
 /*-------------------------------------------------*/
@@ -180,7 +253,7 @@ var corpus = new function(){
 	this.centered = true;
 
 	this.spacing = {
-		LineHeight: 70,
+		LineHeight: 20,
 		SpaceWidth: 20,
 		LetterSpacing: 5,
 	};
@@ -199,6 +272,7 @@ var corpus = new function(){
 		for(letter in word){
 			img = this.imgs[word[letter]];
 			if(img != undefined){
+				ctx.rect(offset, 0, img.width, img.height);
 				ctx.drawImage(img, offset, 0);
 				offset += (img.width + this.spacing.LetterSpacing);
 			}
@@ -215,7 +289,23 @@ var corpus = new function(){
 				len += (img.width + this.spacing.LetterSpacing);
 			}
 		}
-		return len;
+		return (len - this.spacing.LetterSpacing);
+	}
+
+	this.getWordHeight = function(word){
+		var height = 0;
+		var img;
+		for(letter in word){
+			img = this.imgs[word[letter]];
+			if(img != undefined && img.height > height){
+				height = img.height;
+			}
+		}
+		return height;
+	}
+
+	this.getWordHeightOffset = function(word){
+		return 0;
 	}
 }
 
@@ -230,13 +320,14 @@ var tenno = new function(){
 
 	this.currWord = "";
 	this.currWordArray = []
+	this.dim = [0, 0, 0, 0]; // array with: Width, height, drawline offset, startpoint offset
 
 	this.centered = true;
 	this.rot = 24.3 * Math.PI / 180;
 	this.spacing = {
-		LineHeight: 70,
+		LineHeight: 15,
 		SpaceWidth: 20,
-		LetterSpacing: 1,
+		LetterSpacing: 0,
 	};
 
 	this.vowels = ['a', 'e', 'i', 'o', 'u', 'w', 'y', 'ee', 'aw', 'oo', 'ae', 'aye', 'ow'];
@@ -268,161 +359,255 @@ var tenno = new function(){
 		if(word != this.currWord){ // so I dont have to phoneticize several times on same word
 			this.currWord = word;
 			this.currWordArray = this.phoneticize(word);
+			this.dim = this.getWordDimensions(word);
 		}
 
-		var out = ""; // for console logging
-		var offset = 0;
-		var prevCon = false;
-		var prevMisc = false;
+		var pCha = 0; // prevchar, 1 = misc, 2 = vowel, 3 = consonant
+		var xOff = this.dim[3]; // x offset
+		var yOff = this.dim[2]; // y offset, initially set to drawline offset
+		var exta = 0; // extra var placeholder
+		var ref; // image array refrence var
+		var img; // image var
+
 		for(var a = 0; a < this.currWordArray.length; a++){
-			var img = this.imgs[this.currWordArray[a]];
+			ref = this.currWordArray[a];
+			img = this.imgs[ref]; // set img var
 			if(img != undefined){
-				if(find(this.currWordArray[a], this.misc)){//misc
-					var hOffset = this.spacing.LineHeight / 4;
-					if(prevCon){
-						if(this.currWordArray[a-1] == 'r'){
-							var rImg = this.imgs['r'];
-							offset += rImg.width * Math.cos(this.rot) + img.height * Math.sin(this.rot);
+				if(find(ref, this.misc)){ // misc
+					if(exta > 0){ // if previous char was consonant and consonant drew below drawline, add spacing
+						var tmp = img.height / Math.tan(this.rot);
+						if(exta > tmp){
+							xOff += tmp;
 						}else{
-							offset += (img.height + hOffset) / Math.tan(this.rot);
+							xOff += exta;
 						}
-						prevCon = false;
+						exta = 0;
+					}else if(-exta > img.width){ // update exta var, to prevent vowel overlap
+						exta += img.width;
+					}else{
+						exta = 0;
 					}
 
-					ctx.rect(offset, hOffset, img.width, img.height);
-					ctx.drawImage(img, offset, hOffset);
+					ctx.rect(xOff, yOff, img.width, img.height);
+					ctx.drawImage(img, xOff, yOff);
 
-					offset += img.width;
-					prevMisc = true;
-				}else if(find(this.currWordArray[a], this.vowels)){//vowels
-					var maxDim = [0, 0]; // make bounding dimension for concurrent vowels
+					xOff += img.width; // add to width
+
+					pCha = 1;
+				}else if(find(ref, this.vowels)){ // vowel
+					var mWid = img.width;
 					var b = a;
-					while(a < this.currWordArray.length && find(this.currWordArray[a], this.vowels)){ // look through all vowels
+					a++;
+					while(find(this.currWordArray[a], this.vowels)){ // get max dimensions
 						img = this.imgs[this.currWordArray[a]];
-						maxDim[0] += img.width // add widths
-						if(img.height > maxDim[1]){ // choose max height
-							maxDim[1] = img.height;
-						}
-						out += this.currWordArray[a] + ' '; // for console logging
+						mWid += img.width + this.spacing.LetterSpacing;
 						a++;
 					}
-					a--; // compensate for excess a increment
+					a--; // account for extra increment
+					mWid -= this.spacing.LetterSpacing;
 
-					var hOffset = maxDim[0] * Math.sin(this.rot) - maxDim[1] * Math.cos(this.rot);
-					if(prevMisc && hOffset < 0){ // rotated vowel crosspoint is below base line and prev char was misc, compensate 
-						offset += hOffset / Math.tan(this.rot);
+					if(pCha == 0){ // if vowel is first char
+						xOff += mWid * Math.cos(this.rot);
 					}
-					offset += maxDim[1] / Math.sin(this.rot); // add length
 
-					//rotate and draw all vowels
-					ctx.translate(offset, 0);
+					if(exta < 0){
+						xOff -= exta
+					}
+					ctx.translate(xOff, yOff);
 					ctx.rotate(this.rot);
 
-					var rotOffset = 0;
-					for(var c = a; c >= b; c--){
-						img = this.imgs[this.currWordArray[c]];
-						rotOffset += img.width;
-						ctx.rect(-rotOffset, 0, img.width, img.height);
-						ctx.drawImage(img, -rotOffset, 0);
+					for(; b <= a; b++){ // for each vowel
+						img = this.imgs[this.currWordArray[b]];
+						ctx.rect(-mWid, -img.height, img.width, img.height);
+						ctx.drawImage(img, -mWid, -img.height);
+						mWid -= img.width + this.spacing.LetterSpacing;
 					}
 
 					ctx.rotate(-this.rot);
-					ctx.translate(-offset, 0);
+					ctx.translate(-xOff, -yOff);
 
-					prevCon = false;
-					prevMisc = false;
-				}else{//consonants
-					if(prevCon){
-						if(this.currWordArray[a-1] == 'r'){
-							var rImg = this.imgs['r'];
-							offset += rImg.width * Math.cos(this.rot) + img.height * Math.sin(this.rot);
+					var off = mWid * Math.cos(this.rot);
+					if(exta < 0){ // update width
+						if(-exta < off){
+							xOff -= exta;
 						}else{
-							offset += img.height / Math.sin(this.rot);
+							xOff += off;
 						}
-					}else if(prevMisc){
-						offset += img.height * Math.sin(this.rot);
-						prevMisc = false;
+						exta = 0;
 					}
 
-					ctx.translate(offset, 0);
+					pCha = 2;
+				}else{ // cosonant
+					ctx.translate(xOff, yOff);
 					ctx.rotate(this.rot);
-					ctx.rect(0, 0, img.width, img.height);
-					ctx.drawImage(img, 0, 0);
-					ctx.rotate(-this.rot);
-					ctx.translate(-offset, 0);
 
-					prevCon = true;
+					ctx.rect(0, -img.height, img.width, img.height);
+					ctx.drawImage(img, 0, -img.height);
+
+					ctx.rotate(-this.rot);
+					ctx.translate(-xOff, -yOff);
+
+					// update width vars
+					var b = img.height / Math.sin(this.rot); // xOff if this ends below drawline
+					var c = img.width / Math.cos(this.rot); // xOff is this ends above drawline
+					if(b < c){
+						xOff += b;
+						exta = (c-b) * Math.cos(this.rot)*Math.cos(this.rot);
+					}else{
+						xOff += c;
+						exta = (c-b);
+					}
+
+					pCha = 3;
 				}
 			}
-			if(prevCon || prevMisc){ // for console logging
-				out += this.currWordArray[a] + ' ';
-			}
+			xOff += this.spacing.LetterSpacing;
 		}
-		//ctx.stroke(); // for rect bounding boxes
-		//console.log("[ " + out + "]"); // log output chars, for debugging
 	}
 
 	this.getWordLength = function(word){
 		if(word != this.currWord){// so I dont have to phoneticize several times on same word
+			this.dim = this.getWordDimensions(word);
+		}
+		return this.dim[0];
+	}
+
+	this.getWordHeight = function(word){
+		if(word != this.currWord){// so I dont have to phoneticize several times on same word
+			this.dim = this.getWordDimensions(word);
+		}
+		return this.dim[1];
+	}
+
+	this.getWordHeightOffset = function(word){
+		if(word != this.currWord){// so I dont have to phoneticize several times on same word
+			this.dim = this.getWordDimensions(word);
+		}
+		return this.dim[2];
+	}
+
+	this.getWordDimensions = function(word){
+		if(word != this.currWord){ // so I dont have to phoneticize several times on same word
 			this.currWord = word;
 			this.currWordArray = this.phoneticize(word);
 		}
-		var length = 0;
-		var prevCon = false;
-		var prevMisc = false;
+
+		var pCha = 0; // prevchar, 1 = misc, 2 = vowel, 3 = consonant
+		var netW = 0; // x offset
+		var staW = 0; // starting xOffset
+		var tail = 0; // trailing required whitespace
+		var uHei = 0; // upper y offset from drawline
+		var dHei = 0; // lower y offset from drawline
+		var exta = 0; // extra var placeholder
+		var ref; // image array refrence var
+		var img; // image var
+
 		for(var a = 0; a < this.currWordArray.length; a++){
-			var img = this.imgs[this.currWordArray[a]];
+			ref = this.currWordArray[a];
+			img = this.imgs[ref]; // set img var
 			if(img != undefined){
-				if(find(this.currWordArray[a], this.misc)){ // if misc
-					var hOffset = this.spacing.LineHeight / 4;
-					if(prevCon){
-						if(this.currWordArray[a-1] == 'r'){
-							var rImg = this.imgs['r'];
-							length += rImg.width * Math.cos(this.rot) + img.height * Math.sin(this.rot);
-						}else{
-							length += (img.height + hOffset) / Math.tan(this.rot);
-						}
-						prevCon = false;
+				if(find(ref, this.misc)){ // misc
+					if(exta > 0){ // if previous char was consonant and consonant drew below drawline, add spacing
+						netW += exta;
+						exta = 0;
+					}else if(-exta > img.width){ // update exta var, to prevent vowel overlap
+						exta += img.width;
+					}else{
+						exta = 0;
 					}
-					length += img.width;
-					prevMisc = true;
-				}else if(find(this.currWordArray[a], this.vowels)){
-					var maxDim = [0, 0]; // make bounding dimension for concurrent vowels
-					while(a < this.currWordArray.length && find(this.currWordArray[a], this.vowels)){ // look through all vowels
+					netW += img.width; // add to width
+
+					if(dHei < img.height){ // update height if neccesary
+						dHei = img.height;
+					}
+
+					tail = 0;
+					pCha = 1;
+				}else if(find(ref, this.vowels)){ // vowel
+					var dim = [img.width, img.height];
+					a++;
+					while(find(this.currWordArray[a], this.vowels)){ // get max dimensions
 						img = this.imgs[this.currWordArray[a]];
-						maxDim[0] += img.width // add widths
-						if(img.height > maxDim[1]){ // choose max height
-							maxDim[1] = img.height;
+						dim[0] += img.width + this.spacing.LetterSpacing;
+						if(dim[1] < img.height){
+							dim[1] = img.height;
 						}
 						a++;
 					}
-					a--; // compensate for excess a increment
+					a--; // account for extra increment
+					dim[0] -= this.spacing.LetterSpacing;
+					var off = dim[0] * Math.cos(this.rot);
+					var pTail = img.height * Math.sin(this.rot); // potential tail, img should be the last vowel
+					if(exta < 0){ // update width
+						if(-exta < off){
+							netW -= exta;
+						}else{
+							netW += off;
+						}
+						exta = 0;
+						tail = pTail; // update tail
+					}else{ // if positive exta, tail is below drawline
+						if(tail < pTail){ // test how to update tail
+							tail = pTail;
+						}
+					}
 
-					var hOffset = maxDim[0] * Math.sin(this.rot) - maxDim[1] * Math.cos(this.rot);
-					if(prevMisc && hOffset < 0){ // rotated vowel crosspoint is below base line and prev char was misc, compensate 
-						length -= hOffset / Math.tan(this.rot);
+					// setup starting width offset and update width based on previous char and offset
+					if(pCha == 0){
+						netW += off;
+					}else if(netW < off){
+						staW = off - netW;
+						netW += off - netW;
+					}else{
+						staW = 0;
 					}
-					length += maxDim[1] / Math.sin(this.rot); // add length
-					prevCon = false;
-					prevMisc = false;
-				}else{
-					if(prevCon){
-						length += img.height / Math.sin(this.rot);
-					}else if(prevMisc){
-						length += img.height * Math.sin(this.rot);
-						prevMisc = false;
-					}
-					// don't do anything for vowels!
 
-					if(a == this.currWordArray.length-1){ // if consonant last char
-						length += img.width * Math.cos(this.rot);
+					//only approximate, more accurate in future versions?
+					var pHei = dim[0] * Math.sin(this.rot) + dim[1] * Math.cos(this.rot); // update height var
+					if(pHei > uHei){
+						uHei = pHei;
 					}
-					prevCon = true;
+
+					pCha = 2;
+				}else{ // cosonant
+					// update width vars
+					var b = img.height / Math.sin(this.rot); // xOff if this ends below drawline
+					var c = img.width / Math.cos(this.rot); // xOff is this ends above drawline
+					if(b < c){
+						netW += b;
+						exta = (c-b) * Math.cos(this.rot) * Math.cos(this.rot);
+						if(tail < b + exta){
+							tail = exta;
+						}
+					}else{ // if tail is above drawline
+						netW += c;
+						exta = (c-b);
+						var tmp = -exta * Math.sin(this.rot) * Math.sin(this.rot);
+						if(tail < c + tmp){
+							tail = tmp;
+						}else{
+							tail -= c;
+						}
+					}
+
+					// update height vars
+					var tmpH = img.height * Math.cos(this.rot);
+					if(tmpH > uHei){
+						uHei = tmpH;
+					}
+					tmpH = img.width * Math.sin(this.rot);
+					if(tmpH > dHei){
+						dHei = tmpH;
+					}
+
+					pCha = 3;
 				}
 			}
+			netW += this.spacing.LetterSpacing;
 		}
-		//console.log("wordLength: " + length);
-		return length;
+		netW -= this.spacing.LetterSpacing; // account for extra LetterSpacing
+		var out = [netW + tail, uHei + dHei, uHei, staW];
+		return out; // return array containing width, height, drawline offset
 	}
 
 	this.phoneticize = function(word){ // return array of phoneticized chars, according to phoneticizeGuide.txt
@@ -672,7 +857,7 @@ var tenno = new function(){
 		}
 		//console.log(" ");
 
-		var a = 0;
+		var a = 0; // remove duplicates and any undefined chars from the array
 		while(a < wordsArray.length){
 			if(!find(wordsArray[a], this.misc)){
 				while(a < wordsArray.length-1 && wordsArray[a] == wordsArray[a+1]){
@@ -687,4 +872,18 @@ var tenno = new function(){
 
 		return wordsArray;
 	}
+}
+
+//debugging flag
+/*-------------------------------------------------*/
+
+var debug = false;
+document.onkeydown = keydown;
+function keydown(evt) {
+    if (!evt) evt = event;
+    if (evt.altKey) {
+        debug = !debug;
+        console.log("Setting debug to " + debug);
+        draw();
+    }
 }

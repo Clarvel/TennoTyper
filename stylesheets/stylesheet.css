@@ -8,7 +8,9 @@ html, body {
 
 canvas {
 	margin-top: 4px;
-	border: 1px solid #d3d3d3;
+	/*border: 1px solid #d3d3d3;*/
 	display: block;
 	position: flex;
+	margin-left: auto;
+    margin-right: auto;
 }

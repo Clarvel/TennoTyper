@@ -2,13 +2,18 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css">
+		<meta name="description" content="Convert English to any of the 3 Warframe race languages">
+		<meta name="keywords" content="warframe,tenno,corpus,grineer,language,translate,translator,english">
+		<meta name="author" content="Clarvel">
 	</head>
 
 	<body>
 		<table>
 			<tr>
 				<td>
-					<img src="images/warframeLogo.png">
+					<a href="http://www.warframe.com">
+						<img src="images/warframeLogo.png" style="border:0">
+					</a>
 				</td>
 				<td>
 					<textarea id="text" placeholder="Input Text Here" rows="4" cols="50" oninput="draw()" autofocus></textarea>
@@ -20,7 +25,11 @@
 						<option value="grineer">Grineer</option>
 					</select>
 					<br>
-					<!--input type="checkbox" id="emphasis" value="1" onInput="draw()">Emphasis
+					<!--input type="checkbox" id="logo" value="1" onInput="draw()">Race Logo
+					<br-->
+					<!--input type="button" id="displayGuide" onInput="displayGuide()">Show Guide
+					<br-->
+					<!--input type="checkbox" id="emphasis" value="1" onInput="draw()">Race Logo
 					<br-->
 					<button type="button" id="save" onClick="saveImg()">Save</button>
 				</td>
