@@ -178,7 +178,7 @@ var grineer = new function(){
 	};
 
 	this.imgs = [];
-	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', 'z', "Question", "Period", "Comma", '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'y', 'z', "Question", "Period", "Comma", '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 	for(var a = 0; a < chars.length; a++){ // gets images and puts them in imgs table
 		switch(chars[a]){
 			case 'Question':
@@ -192,6 +192,10 @@ var grineer = new function(){
 			case 'Period':
 				this.imgs['.'] = new Image();
 				this.imgs['.'].src = this.folder + this.pre + chars[a] + this.ext;
+				break;
+			case 'q':
+				this.imgs['q'] = new Image();
+				this.imgs['q'].src = this.folder + this.pre + 'k' + this.ext;
 				break;
 			default:
 				this.imgs[chars[a]] = new Image();
