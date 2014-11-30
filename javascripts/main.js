@@ -673,6 +673,11 @@ var tenno = new function(){
 				case 'w':
 					array.push('oo');
 					break;
+				case 'c':
+					if(!(a < word.length-1 && word[a+1] == h)){
+						array.push('k');
+						break;
+					}
 				default:
 					for(var b = 0; b < this.chars.length; b++){
 						test = word.indexOf(this.chars[b], a);
