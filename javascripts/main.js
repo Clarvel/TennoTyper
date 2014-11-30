@@ -15,6 +15,15 @@ var offset = {
 	yOffset: 0,
 }
 var background = false;
+var phonet = true;
+
+var languages = ["tenno", "corpus", "grineer"];
+var cheatsheets = {};
+for(var a = 0; a < languages.length; a++){
+	var img = new Image();
+	img.src = "./images/" + languages[a] + "bet.png";
+	cheatsheets[languages[a]] = img;
+}
 
 //html callbacks
 /*-------------------------------------------------*/
@@ -33,6 +42,7 @@ function draw(){
 			placeString(ctx, str, grineer);
 			break;
 		case "tenno":
+			tenno.recalc = true;
 			placeString(ctx, str, tenno);
 	}
 }
@@ -49,6 +59,22 @@ function loaded(){
 function backG(){
 	background = !background;
 	draw();
+}
+
+function phonetic(){
+	phonet = !phonet;
+	draw();
+}
+
+function cheatsheet(){
+	try{
+		var d = cheatsheets[language.value].src;
+		var w=window.open('about:blank','cheatsheet');
+		w.document.write("<img src='"+d+"' alt='from canvas'/>");
+	}catch(error){
+		console.log("Could not open cheatsheet tab.");
+		alert("Could not open cheatsheet:\n" + error);
+	}
 }
 
 function saveImg(){
@@ -336,8 +362,9 @@ var tenno = new function(){
 	this.pre = 't';
 	this.ext = ".svg";
 
+	this.recalc = true; // whether recalculations are required
 	this.currWord = "";
-	this.currWordArray = []
+	this.currWordArray = [];
 	this.dim = [0, 0, 0, 0]; // array with: Width, height, drawline offset, startpoint offset
 
 	this.centered = true;
@@ -352,32 +379,36 @@ var tenno = new function(){
 	this.misc = [',', '.', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 	this.imgs = [];
-	var chars = ['ee', 'i', 'e', 'a', 'aw', 'u', 'o', 'oo', 'ae', 'aye', 'ow', 'p', 'b', 't', 'd', 's', 'z', 'j', 'k', 'g', 'f', 'v', 'th', 'dh', 'sh', 'zh', 'ch', 'kh', 'm', 'n', 'h', 'r', 'l', 'ng', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', "Period", "Comma", "Hyphen"];
-	for(var a = 0; a < chars.length; a++){
-		switch(chars[a]){
+	this.chars = ['aye', 'ae', 'ow', 'aw', 'ee', 'i', 'e', 'a', 'u', 'oo' , 'o', 'th', 'dh', 'sh', 'zh', 'ch', 'kh', 'ng', 'p', 'b', 't', 'd', 's', 'z', 'j', 'k', 'g', 'f', 'v', 'm', 'n', 'h', 'r', 'l', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', "Period", "Comma", "Hyphen"];
+	for(var a = 0; a < this.chars.length; a++){
+		switch(this.chars[a]){
 			case 'Comma':
 				this.imgs[','] = new Image();
-				this.imgs[','].src = this.folder + this.pre + chars[a] + this.ext;
+				this.imgs[','].src = this.folder + this.pre + this.chars[a] + this.ext;
+				this.chars[a] = ',';
 				break;
 			case 'Hyphen':
 				this.imgs['-'] = new Image();
-				this.imgs['-'].src = this.folder + this.pre + chars[a] + this.ext;
+				this.imgs['-'].src = this.folder + this.pre + this.chars[a] + this.ext;
+				this.chars[a] = '-';
 				break;
 			case 'Period':
 				this.imgs['.'] = new Image();
-				this.imgs['.'].src = this.folder + this.pre + chars[a] + this.ext;
+				this.imgs['.'].src = this.folder + this.pre + this.chars[a] + this.ext;
+				this.chars[a] = '.';
 				break;
 			default:
-				this.imgs[chars[a]] = new Image();
-				this.imgs[chars[a]].src = this.folder + this.pre + chars[a] + this.ext;
+				this.imgs[this.chars[a]] = new Image();
+				this.imgs[this.chars[a]].src = this.folder + this.pre + this.chars[a] + this.ext;
 		}
 	}
 
 	this.placeWord = function(ctx, word){ // place centered images
-		if(word != this.currWord){ // so I dont have to phoneticize several times on same word
+		if(this.recalc || this.currWord != word){
 			this.currWord = word;
 			this.currWordArray = this.phoneticize(word);
 			this.dim = this.getWordDimensions(word);
+			this.recalc = false;
 		}
 
 		var pCha = 0; // prevchar, 1 = misc, 2 = vowel, 3 = consonant
@@ -484,30 +515,31 @@ var tenno = new function(){
 	}
 
 	this.getWordLength = function(word){
-		if(word != this.currWord){// so I dont have to phoneticize several times on same word
+		if(this.recalc || word != this.currWord){// so I dont have to phoneticize several times on same word
 			this.dim = this.getWordDimensions(word);
 		}
 		return this.dim[0];
 	}
 
 	this.getWordHeight = function(word){
-		if(word != this.currWord){// so I dont have to phoneticize several times on same word
+		if(this.recalc || word != this.currWord){// so I dont have to phoneticize several times on same word
 			this.dim = this.getWordDimensions(word);
 		}
 		return this.dim[1];
 	}
 
 	this.getWordHeightOffset = function(word){
-		if(word != this.currWord){// so I dont have to phoneticize several times on same word
+		if(this.recalc || word != this.currWord){// so I dont have to phoneticize several times on same word
 			this.dim = this.getWordDimensions(word);
 		}
 		return this.dim[2];
 	}
 
 	this.getWordDimensions = function(word){
-		if(word != this.currWord){ // so I dont have to phoneticize several times on same word
+		if(this.recalc || this.currWord != word){
 			this.currWord = word;
 			this.currWordArray = this.phoneticize(word);
+			this.recalc = false;
 		}
 
 		var pCha = 0; // prevchar, 1 = misc, 2 = vowel, 3 = consonant
@@ -628,8 +660,46 @@ var tenno = new function(){
 		return out; // return array containing width, height, drawline offset
 	}
 
+	this.literal = function(word){
+		var array = []
+		var found;
+		var a = 0;
+		while(a < word.length){
+			found = false;
+			switch(word[a]){
+				case 'y':
+					array.push('ee');
+					break;
+				case 'w':
+					array.push('oo');
+					break;
+				default:
+					for(var b = 0; b < this.chars.length; b++){
+						test = word.indexOf(this.chars[b], a);
+						if(test == a){
+							array.push(this.chars[b]);
+							a += this.chars[b].length;
+							b = this.chars.length+1;
+							found = true;
+						}
+					}
+			}
+			
+			if(!found){
+				a++;
+			}
+		}
+		return array;
+	}
+
 	this.phoneticize = function(word){ // return array of phoneticized chars, according to phoneticizeGuide.txt
 		var wordsArray = [];
+
+		if(!phonet){
+			wordsArray = this.literal(word);
+			return wordsArray;
+		}
+
 		for(var a = 0; a < word.length; a++){
 			if(a < word.length-1){ // if there is at least 1 char after a
 				var b = true; // true if program should break out of following main switch, only becomes false for fallthrough
