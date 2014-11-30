@@ -674,7 +674,7 @@ var tenno = new function(){
 					array.push('oo');
 					break;
 				case 'c':
-					if(!(a < word.length-1 && word[a+1] == h)){
+					if(!(a < word.length-1 && word[a+1] == 'h')){
 						array.push('k');
 						break;
 					}
