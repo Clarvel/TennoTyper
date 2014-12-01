@@ -208,7 +208,7 @@ function Paragraph(str, lanClass){
 var grineer = new function(){
 	this.folder = "./images/grineer/";
 	this.pre = 'g';
-	this.ext = ".svg";
+	this.ext = ".png";
 	this.centered = false;
 
 	this.spacing = {
@@ -293,7 +293,7 @@ var grineer = new function(){
 var corpus = new function(){
 	this.folder = "./images/corpus/";
 	this.pre = 'c';
-	this.ext = ".svg";
+	this.ext = ".png";
 	this.centered = true;
 
 	this.spacing = {
@@ -360,7 +360,7 @@ var corpus = new function(){
 var tenno = new function(){
 	this.folder = "./images/tenno/";
 	this.pre = 't';
-	this.ext = ".svg";
+	this.ext = ".png";
 
 	this.recalc = true; // whether recalculations are required
 	this.currWord = "";
