@@ -303,7 +303,7 @@ var corpus = new function(){
 	};
 
 	this.imgs = [];
-	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y'];
+	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
 	for(var index = 0; index < chars.length; index += 1){ // gets images and puts them in imgs table
 		this.imgs[chars[index]] = new Image();
 		this.imgs[chars[index]].src = this.folder + this.pre + chars[index] + this.ext;
