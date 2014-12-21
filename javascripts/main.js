@@ -460,7 +460,11 @@ var tenno = new function(){
 					}
 
 					if(exta < 0){
-						xOff -= exta
+						if(mWid >= -exta){
+							xOff -= exta;
+						}else{
+							xOff += mWid * Math.cos(this.rot) + (-exta) * Math.sin(this.rot) * Math.sin(this.rot);
+						}
 					}
 					ctx.translate(xOff, yOff);
 					ctx.rotate(this.rot);
@@ -597,13 +601,12 @@ var tenno = new function(){
 							if(dim[0] > -exta){
 								netW += off;
 							}else{
-								netW -= exta;
+								netW += dim[0] * Math.cos(this.rot) + (-exta) * Math.sin(this.rot) * Math.sin(this.rot);
 							}
 						}
 						exta = 0;
 						tail = pTail; // update tail
 					}else{ // if positive exta, tail is below drawline
-						console.log("test");
 						if(tail < pTail){ // test how to update tail
 							tail = pTail;
 						}
