@@ -588,15 +588,22 @@ var tenno = new function(){
 					dim[0] -= this.spacing.LetterSpacing;
 					var off = dim[0] * Math.cos(this.rot);
 					var pTail = img.height * Math.sin(this.rot); // potential tail, img should be the last vowel
-					if(exta < 0){ // update width
+					if(exta < 0){ // update width for consonant above drawline
+						console.log(-exta + " < " + off);
 						if(-exta < off){
 							netW -= exta;
 						}else{
-							netW += off;
+							console.log("width:" + dim[0] + " exta:" + -exta + " off:" + off);
+							if(dim[0] > -exta){
+								netW += off;
+							}else{
+								netW -= exta;
+							}
 						}
 						exta = 0;
 						tail = pTail; // update tail
 					}else{ // if positive exta, tail is below drawline
+						console.log("test");
 						if(tail < pTail){ // test how to update tail
 							tail = pTail;
 						}
@@ -623,11 +630,13 @@ var tenno = new function(){
 					// update width vars
 					var b = img.height / Math.sin(this.rot); // xOff if this ends below drawline
 					var c = img.width / Math.cos(this.rot); // xOff is this ends above drawline
-					if(b < c){
+					if(b < c){ // tail below drawline
 						netW += b;
 						exta = (c-b) * Math.cos(this.rot) * Math.cos(this.rot);
 						if(tail < b + exta){
 							tail = exta;
+						}else{
+							tail -= b;
 						}
 					}else{ // if tail is above drawline
 						netW += c;
