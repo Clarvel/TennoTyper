@@ -4,6 +4,7 @@ html, body {
 	margin: 2px;
 	font-family: optima;
 	font-size: 87%;
+	background-color: #F0F0F0;
 }
 
 canvas {

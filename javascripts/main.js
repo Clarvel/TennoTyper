@@ -1,9 +1,13 @@
 //global variables
 var c = document.getElementById("renderWindow");
 var ctx = c.getContext("2d");
+var cheatWindow; // global refrence for cheatsheet window
 
 var text = document.getElementById("text");
 var language = document.getElementById("language");
+var oButton = document.getElementById("tOverride"); // tenno manual override button
+var bButton = document.getElementById("cBold"); // corpus bold option button
+	bButton.style.display = "none";
 
 var js = {
 	path: "./javascripts/",
@@ -16,14 +20,15 @@ var offset = {
 }
 var background = false;
 var phonet = true;
+var boldify = false;
 
 var languages = ["tenno", "corpus", "grineer"];
 var cheatsheets = {};
-for(var a = 0; a < languages.length; a++){
-	var img = new Image();
-	img.src = "./images/" + languages[a] + "bet.png";
-	cheatsheets[languages[a]] = img;
-}
+	for(var a = 0; a < languages.length; a++){
+		var img = new Image();
+		img.src = "./images/" + languages[a] + "bet.png";
+		cheatsheets[languages[a]] = img;
+	}
 
 //html callbacks
 /*-------------------------------------------------*/
@@ -36,13 +41,18 @@ function draw(){
 	//ctx.fillText(str, 2, 30);
 	switch(language.value){
 		case "corpus":
+			oButton.style.display = "none";
+			bButton.style.display = "inline";
 			placeString(ctx, str, corpus);
 			break;
 		case "grineer":
-			placeString(ctx, str, grineer);
+			oButton.style.display = "none";
+			bButton.style.display = "none";
+			placeString(ctx, grineer.modify(str), grineer);
 			break;
 		case "tenno":
-			tenno.recalc = true;
+			oButton.style.display = "inline";
+			bButton.style.display = "none";
 			placeString(ctx, str, tenno);
 	}
 }
@@ -66,15 +76,18 @@ function phonetic(){
 	draw();
 }
 
+function bold(){
+	boldify = !boldify;
+	draw();
+}
+
 function cheatsheet(){
-	try{
-		var d = cheatsheets[language.value].src;
-		var w=window.open('about:blank','cheatsheet');
-		w.document.write("<img src='"+d+"' alt='from canvas'/>");
-	}catch(error){
-		console.log("Could not open cheatsheet tab.");
-		alert("Could not open cheatsheet:\n" + error);
+	if(cheatWindow != undefined){
+		cheatWindow.close();
 	}
+	cheatWindow = window.open("about:blank", "Cheatsheet");
+	cheatWindow.document.writeln("<html><body><img src='" + cheatsheets[language.value].src + "'/></body></html>");
+	cheatWindow.focus();
 }
 
 function saveImg(){
@@ -213,12 +226,12 @@ var grineer = new function(){
 
 	this.spacing = {
 		LineHeight: 15,
-		SpaceWidth: 20,
+		SpaceWidth: 25,
 		LetterSpacing: 5,
 	};
 
 	this.imgs = [];
-	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'y', 'z', "Question", "Period", "Comma", '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', 'z', "Question", "Period", "Comma", "Hash", "At", '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 	for(var a = 0; a < chars.length; a++){ // gets images and puts them in imgs table
 		switch(chars[a]){
 			case 'Question':
@@ -233,9 +246,13 @@ var grineer = new function(){
 				this.imgs['.'] = new Image();
 				this.imgs['.'].src = this.folder + this.pre + chars[a] + this.ext;
 				break;
-			case 'q':
-				this.imgs['q'] = new Image();
-				this.imgs['q'].src = this.folder + this.pre + 'k' + this.ext;
+			case 'Hash':
+				this.imgs['#'] = new Image();
+				this.imgs['#'].src = this.folder + this.pre + chars[a] + this.ext;
+				break;
+			case 'At':
+				this.imgs['@'] = new Image();
+				this.imgs['@'].src = this.folder + this.pre + chars[a] + this.ext;
 				break;
 			default:
 				this.imgs[chars[a]] = new Image();
@@ -285,6 +302,12 @@ var grineer = new function(){
 	this.getWordHeightOffset = function(word){
 		return 0;
 	}
+
+	this.modify = function(str){
+		str = str.replace(/q/g, "kw");
+		str = str.replace(/x/g, "ks");
+		return str;
+	}
 }
 
 //corpus
@@ -298,23 +321,32 @@ var corpus = new function(){
 
 	this.spacing = {
 		LineHeight: 20,
-		SpaceWidth: 20,
+		SpaceWidth: 25,
 		LetterSpacing: 5,
 	};
 
 	this.imgs = [];
-	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+	this.bImgs = [];
+	chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'y', 'z', '0', '1'];
 	for(var index = 0; index < chars.length; index += 1){ // gets images and puts them in imgs table
 		this.imgs[chars[index]] = new Image();
 		this.imgs[chars[index]].src = this.folder + this.pre + chars[index] + this.ext;
+		this.bImgs[chars[index]] = new Image();
+		this.bImgs[chars[index]].src = this.folder + 'b' + this.pre + chars[index] + this.ext;
 	}
 
 
 	this.placeWord = function(ctx, word){ // place left aligned images
 		var offset = 0;
 		var img;
+
+		var imgs = this.imgs;
+		if(boldify){
+			imgs = this.bImgs;
+		}
+
 		for(letter in word){
-			img = this.imgs[word[letter]];
+			img = imgs[word[letter]];
 			if(img != undefined){
 				ctx.rect(offset, 0, img.width, img.height);
 				ctx.drawImage(img, offset, 0);
@@ -326,9 +358,15 @@ var corpus = new function(){
 	this.getWordLength = function(word){
 		var len = 0;
 		var img;
+
+		var imgs = this.imgs;
+		if(boldify){
+			imgs = this.bImgs;
+		}
+
 		for(letter in word){
 			//console.log("word:" + word + " letter:" + letter + " letterVal:" + word[letter] + " img:" + this.imgs[word[letter]] + " imgLen:" + this.imgs[word[letter]].width);
-			img = this.imgs[word[letter]];
+			img = imgs[word[letter]];
 			if(img != undefined){
 				len += (img.width + this.spacing.LetterSpacing);
 			}
@@ -339,8 +377,14 @@ var corpus = new function(){
 	this.getWordHeight = function(word){
 		var height = 0;
 		var img;
+
+		var imgs = this.imgs;
+		if(boldify){
+			imgs = this.bImgs;
+		}
+
 		for(letter in word){
-			img = this.imgs[word[letter]];
+			img = imgs[word[letter]];
 			if(img != undefined && img.height > height){
 				height = img.height;
 			}
