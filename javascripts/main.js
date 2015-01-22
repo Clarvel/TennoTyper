@@ -304,6 +304,7 @@ var grineer = new function(){
 	}
 
 	this.modify = function(str){
+		str = str.replace(/qu/g, "kw");
 		str = str.replace(/q/g, "kw");
 		str = str.replace(/x/g, "ks");
 		return str;
