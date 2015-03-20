@@ -7,6 +7,4 @@ save as a png.
 
 ==========
 
-features to be added:
-
-language logo image option
+http://clarvel.github.io/TennoTyper
