@@ -1003,7 +1003,7 @@ var tenno = new function(){
 						wordsArray.push('k');
 						break;
 					case 'e': // e[end] = silent
-						if(a == 0){
+						if(a == 0){ // e is the only letter
 							wordsArray.push('e');
 						}
 						break;
@@ -1015,6 +1015,13 @@ var tenno = new function(){
 						break;
 					case 'x':
 						wordsArray.push('z');
+						break;
+					case 'i':
+						if(a == 0){ // if 'i' is the only letter
+							wordsArray.push('aye');
+						}else{
+							wordsArray.push('i');
+						}
 						break;
 					case 'y': // y[end] = aye
 						wordsArray.push('aye');
