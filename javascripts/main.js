@@ -778,7 +778,7 @@ var tenno = new function(){
 								break;
 							case 'o':
 								if(a < word.length-2 && word[a+2] == 'u'){
-									wordsArray.apend(word[a]);
+									wordsArray.push(word[a]);
 									wordsArray.push('ow');
 									a++; // account for removing 3 chars
 									break;
@@ -903,7 +903,7 @@ var tenno = new function(){
 								break;
 							case 'o':
 								if(a < word.length-2 && word[a+2] == 'u'){
-									wordsArray.apend(word[a]);
+									wordsArray.push(word[a]);
 									wordsArray.push('ow');
 									a += 2; // account for removing 3 chars
 									b = false;
