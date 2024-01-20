@@ -22,7 +22,7 @@ var background = false;
 var phonet = true;
 var boldify = false;
 
-var languages = ["tenno", "corpus", "grineer"];
+var languages = ["tenno", "orokin", "corpus", "grineer"];
 var cheatsheets = {};
 	for(var a = 0; a < languages.length; a++){
 		var img = new Image();
@@ -54,6 +54,12 @@ function draw(){
 			oButton.style.display = "inline";
 			bButton.style.display = "none";
 			placeString(ctx, str, tenno);
+			break;
+		case "orokin":
+			oButton.style.display = "inline";
+			bButton.style.display = "none";
+			placeString(ctx, str, orokin);
+			break;
 	}
 }
 
@@ -757,6 +763,730 @@ var tenno = new function(){
 	this.phoneticize = function(word){ // return array of phoneticized chars, according to phoneticizeGuide.txt
 		var wordsArray = [];
 
+		if(!phonet){
+			wordsArray = this.literal(word);
+			return wordsArray;
+		}
+
+		for(var a = 0; a < word.length; a++){
+			if(a < word.length-1){ // if there is at least 1 char after a
+				var b = true; // true if program should break out of following main switch, only becomes false for fallthrough
+				switch(word[a]){
+				//handle special cases where singletons are not directly matched
+					case 'c':
+						switch(word[a+1]){
+							case 'h':
+								if(a > 0 && find(word[a-1], this.vowels)){
+									wordsArray.push('kh');
+									break;
+								}
+								wordsArray.push('ch');
+								break;
+							case 'o':
+								if(a < word.length-2 && word[a+2] == 'u'){
+									wordsArray.push(word[a]);
+									wordsArray.push('ow');
+									a++; // account for removing 3 chars
+									break;
+								}
+							default:
+								wordsArray.push('k');
+								a--; // account for only removing 1 char
+						}
+						a++;
+						b = false;
+						break;
+					case 'o':
+						switch(word[a+1]){
+							case 'o':
+							case 'u':
+								wordsArray.push('oo');
+								break;
+							case 'w':
+								wordsArray.push('ow');
+								break;
+							default:
+								if(find(word[a+1], this.vowels) || find(word[a+1], this.misc) || word[a+1] == 'l'){
+									wordsArray.push('o');
+								}else{
+									wordsArray.push('aw');
+								}
+								a--;
+						}
+						a++;
+						b = false;
+						break;
+					case 'w':
+						wordsArray.push('oo');
+						if(word[a+1] == 'a'){
+							wordsArray.push('o');
+							a++;
+						}
+						b = false;
+						break;
+					case 'y':
+						switch(word[a+1]){
+							case 'i':
+								wordsArray.push('aye');
+								a++;
+								break;
+							case 'o':
+								if(a < word.length-2 && word[a+2] == 'u'){
+									if(word.length == 3 || find(word[a+3], this.misc)){
+										wordsArray.push('ee');
+										wordsArray.push('oo');
+										wordsArray.push('h');
+										a += 2;
+										break;
+									}
+								}
+							default:
+								wordsArray.push('ee');
+						}
+						b = false;
+						break;
+
+				//handle normal cases
+					case 'a':
+						switch(word[a+1]){
+							case 'e':
+							case 'i':
+								wordsArray.push('ae');
+								a++
+								b = false;
+								break;
+							case 'y':
+								if(a < word.length-2 && word[a+2] == 'e'){
+									wordsArray.push('aye');
+									a += 2;
+									b = false;
+									break;
+								}
+								wordsArray.push('ae');
+								a++
+								b = false;
+								break;
+							case 'w':
+								wordsArray.push('aw');
+								a++;
+								b = false;
+								break;
+							case 's':
+								wordsArray.push('zh');
+								a++;
+								b = false;
+								break;
+							default:
+								if(a < word.length-2 && word[a+2] == 'e'){
+									if(!(find(word[a+1], this.vowels) || find(word[a+1], this.misc))){ // if consonant
+										if(word[a+1] == 'r'){
+											wordsArray.push('aw');
+										}else{
+											wordsArray.push('ae');
+										}
+										b = false;
+										break;
+									}
+								}
+						}
+						break;
+					case 'b':
+						if(a < word.length-2 && word[a+2] == 'u'){
+							if(word[a+1] == 'o'){
+								wordsArray.push('b');
+								wordsArray.push('ow');
+								a += 2;
+								b = false;
+							}
+						}
+						break;
+					case 'd':
+						switch(word[a+1]){
+							case 'h':
+								wordsArray.push('dh');
+								a++;
+								b = false;
+								break;
+							case 'o':
+								if(a < word.length-2 && word[a+2] == 'u'){
+									wordsArray.push(word[a]);
+									wordsArray.push('ow');
+									a += 2; // account for removing 3 chars
+									b = false;
+								}
+							default:
+						}
+						break;
+					case 'e':
+						switch(word[a+1]){
+							case 'a':
+							case 'e':
+								wordsArray.push('ee');
+								a++;
+								b = false;
+								break;
+							default:
+						}
+						break;
+					case 'g':
+						if(word[a+1] == 'e'){
+							wordsArray.push('j');
+							wordsArray.push('i');
+							a++;
+							b = false;
+						}
+						break;
+					case 'i':
+						if(word[a+1] == 'e'){
+							wordsArray.push('aye');
+							a++;
+							b = false;
+						}else if(word[a+1] == 'a'){
+							wordsArray.push('ee');
+							b = false;
+						}else if(a < word.length-2 && word[a+2] == 'e' && !find(word[a+3], this.vowels)){
+							if(!find(word[a+1], this.vowels) && !find(word[a+1], this.misc)){
+								wordsArray.push('aye');
+								b = false;
+							}
+						}
+						break;
+					case 'n':
+						if(a == word.length-2 && word[a+1] == 'g'){
+							wordsArray.push('ng');
+							a++;
+							b = false;
+						}
+						break;
+					case 's':
+						if(word[a+1] == 'h'){
+							wordsArray.push('sh');
+							a++;
+							b = false;
+						}
+						break;
+					case 't':
+						if(word[a+1] == 'h'){
+							wordsArray.push('th');
+							if(a < word.length-2 && word[a+2] == 'e'){
+								if(word.length == 3 || find(word[a+3], this.misc)){
+									wordsArray.push('u');
+									wordsArray.push('h');
+									a++;
+								}
+							}
+							a++;
+							b = false;
+						}else if(a < word.length-3){
+							if(word[a+1] == 'i' && word[a+2] == 'o' && word[a+3] == 'n'){
+								wordsArray.push('sh');
+								wordsArray.push('u');
+								wordsArray.push('m');
+								a += 3;
+								b = false;
+							}
+						}
+						break;
+					case 'u':
+						if(a < word.length-2){
+							if(!(find(word[a+1], this.vowels) || find(word[a+1], this.misc))){ // if a+1 = consonant
+								if(find(word[a+2], this.vowels)){ // if a+2 = vowel
+									wordsArray.push('oo');
+									b = false;
+									break;
+								}
+							}
+						}
+						break;
+					default:
+				}
+				if(b){ // true by default
+					wordsArray.push(word[a]);
+				}
+			}else{ // a is the last char in word
+				switch(word[a]){
+					case 'c':
+						wordsArray.push('k');
+						break;
+					case 'e': // e[end] = silent
+						if(a == 0){ // e is the only letter
+							wordsArray.push('e');
+						}
+						break;
+					case 'o':
+						wordsArray.push('o');
+						break;
+					case 'w':
+						wordsArray.push('oo');
+						break;
+					case 'x':
+						wordsArray.push('z');
+						break;
+					case 'i':
+						if(a == 0){ // if 'i' is the only letter
+							wordsArray.push('aye');
+						}else{
+							wordsArray.push('i');
+						}
+						break;
+					case 'y': // y[end] = aye
+						wordsArray.push('aye');
+						break;
+					default:
+						wordsArray.push(word[a]);
+				}
+			}
+			//console.log(word[a] + " -> " + wordsArray[wordsArray.length-1]);
+		}
+		//console.log(" ");
+
+		var a = 0; // remove duplicates and any undefined chars from the array
+		while(a < wordsArray.length){
+			if(!find(wordsArray[a], this.misc)){
+				while(a < wordsArray.length-1 && wordsArray[a] == wordsArray[a+1]){
+					wordsArray.splice(a, 1); // remove duplicates
+				}
+			}
+			if(this.imgs[wordsArray[a]] == undefined){ // remove undefined chars
+				wordsArray.splice(a, 1);
+			}
+			a++;
+		}
+
+		return wordsArray;
+	}
+}
+
+//orokin 1999
+/*-------------------------------------------------*/
+
+var orokin = new function(){
+
+	/**
+	 * Parameters
+	 */
+	this.folder = "./images/orokin/";
+	this.pre = 'o_';
+	this.ext = ".png";
+	this.centered = true;
+
+	this.currWord = "";
+	this.currWordArray = [];
+
+	this.spacing = {
+		LineHeight: 20,
+		SpaceWidth: 22,
+		LetterSpacing: 5,
+	};
+	this.vowelsOffset = 12;
+
+	/**
+	 * Characters dictionaries
+	 */
+	this.vowels = ['a', 'e', 'i', 'o', 'u', 'w', 'y', 'ee', 'aw', 'oo', 'ae', 'aye', 'ow'];
+	this.misc = [',', '.', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+	this.imgs = [];
+	this.chars = ['aye', 'ae', 'ow', 'aw', 'ee', 'i', 'e', 'a', 'u', 'oo' , 'o', 'th', 'dh', 'sh', 'zh', 'ch', 'kh', 'ng', 'p', 'b', 't', 'd', 's', 'z', 'j', 'k', 'g', 'f', 'v', 'm', 'n', 'h', 'r', 'l', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ".", ",", "-"];
+	
+	/**
+	 * Mapping characters to images
+	 */
+	for(var a = 0; a < this.chars.length; a++){
+		let img = new Image();
+		switch(this.chars[a]){
+			case ',':
+				img.src = this.folder + this.pre + 'Comma' + this.ext;
+				break;
+			case '-':
+				img.src = this.folder + this.pre + 'Hyphen' + this.ext;
+				break;
+			case '.':
+				img.src = this.folder + this.pre + 'Period' + this.ext;
+				break;
+			default:
+				img.src = this.folder + this.pre + this.chars[a] + this.ext;
+		}
+		this.imgs[this.chars[a]] = img;
+	}
+
+	/**
+	 * PlaceWord function
+	 */
+	this.placeWord = function(ctx, word){
+		if(this.currWord != word){
+			this.currWord = word;
+			this.currWordArray = this.phoneticize(word);
+		}
+
+		const chType = {
+			Misc: 'misc',
+			Vowel: 'vowel',
+			Consonant: 'consonant',
+			None: 'none'
+		};
+		let letterOffsetX = 0;
+		let img;
+		let vowelsInRow = [];
+		let vowelsLen = 0;
+		
+		for(let ch of this.currWordArray){
+			img = this.imgs[ch];
+			
+			// Skip unregistered characters
+			if(img == undefined) continue;
+
+			// Set type of current character
+			let curCh;
+			if(find(ch, this.misc)) curCh = chType.Misc;
+			else if(find(ch, this.vowels)) curCh = chType.Vowel;
+			else curCh = chType.Consonant;
+
+			// Draw character
+			switch(curCh){
+				case chType.Misc:
+					// Draw remaining vowels before misc character
+					if(vowelsInRow.length > 0){
+						// Add sillent 'h'
+						img = this.imgs['h'];
+					
+						let cOffsetX = letterOffsetX;
+						let vOffsetX = letterOffsetX;
+					
+						// Remove last letter spacing
+						vowelsLen -= this.spacing.LetterSpacing;
+					
+						if(vowelsLen > img.width){
+							cOffsetX += (vowelsLen - img.width) / 2;
+
+							// Draw consonant
+							ctx.rect(cOffsetX, this.vowelsOffset, img.width, img.height);
+							ctx.drawImage(img, cOffsetX, this.vowelsOffset);
+							letterOffsetX += vowelsLen + this.spacing.LetterSpacing;
+						}else{
+							vOffsetX += (img.width - vowelsLen) / 2;
+						
+							// Draw consonant
+							ctx.rect(cOffsetX, this.vowelsOffset, img.width, img.height);
+							ctx.drawImage(img, cOffsetX, this.vowelsOffset);
+							letterOffsetX += img.width + this.spacing.LetterSpacing;
+						}
+					
+						// Draw vowels
+						for(let vImg of vowelsInRow){
+							ctx.rect(vOffsetX, 0, vImg.width, vImg.height);
+							ctx.drawImage(vImg, vOffsetX, 0);
+							vOffsetX += vImg.width + this.spacing.LetterSpacing;
+						}
+					
+						vowelsInRow = [];
+						vowelsLen = 0;
+
+						// reset img to misc ch
+						img = this.imgs[ch];
+					}
+
+					// Draw misc character
+					ctx.rect(letterOffsetX, this.vowelsOffset, img.width, img.height);
+					ctx.drawImage(img, letterOffsetX, this.vowelsOffset);
+					letterOffsetX += img.width + this.spacing.LetterSpacing;
+					break;
+				case chType.Vowel:
+					vowelsInRow.push(img);
+					vowelsLen += img.width + this.spacing.LetterSpacing;
+					break;
+				case chType.Consonant:
+
+					if(vowelsInRow.length > 0){
+						let cOffsetX = letterOffsetX;
+						let vOffsetX = letterOffsetX;
+
+						// Remove last letter spacing
+						vowelsLen -= this.spacing.LetterSpacing;
+
+						if(vowelsLen > img.width){
+							cOffsetX += (vowelsLen - img.width) / 2;
+							
+							// Draw consonant
+							ctx.rect(cOffsetX, this.vowelsOffset, img.width, img.height);
+							ctx.drawImage(img, cOffsetX, this.vowelsOffset);
+							letterOffsetX += vowelsLen + this.spacing.LetterSpacing;
+						}else{
+							vOffsetX += (img.width - vowelsLen) / 2;
+
+							// Draw consonant
+							ctx.rect(cOffsetX, this.vowelsOffset, img.width, img.height);
+							ctx.drawImage(img, cOffsetX, this.vowelsOffset);
+							letterOffsetX += img.width + this.spacing.LetterSpacing;
+						}
+
+						// Draw vowels
+						for(let vImg of vowelsInRow){
+							ctx.rect(vOffsetX, 0, vImg.width, vImg.height);
+							ctx.drawImage(vImg, vOffsetX, 0);
+							vOffsetX += vImg.width + this.spacing.LetterSpacing;
+						}
+
+						vowelsInRow = [];
+						vowelsLen = 0;
+						break;
+					}
+					
+					ctx.rect(letterOffsetX, this.vowelsOffset, img.width, img.height);
+					ctx.drawImage(img, letterOffsetX, this.vowelsOffset);
+					letterOffsetX += img.width + this.spacing.LetterSpacing;
+					break;
+				default: break;
+			}
+		}
+
+		// Draw remaining vowels on end of the word
+		if(vowelsInRow.length > 0){
+			// Add sillent 'h'
+			img = this.imgs['h'];
+
+			let cOffsetX = letterOffsetX;
+			let vOffsetX = letterOffsetX;
+
+			// Remove last letter spacing
+			vowelsLen -= this.spacing.LetterSpacing;
+
+			if(vowelsLen > img.width){
+				cOffsetX += (vowelsLen - img.width) / 2;
+				
+				// Draw consonant
+				ctx.rect(cOffsetX, this.vowelsOffset, img.width, img.height);
+				ctx.drawImage(img, cOffsetX, this.vowelsOffset);
+				letterOffsetX += vowelsLen + this.spacing.LetterSpacing;
+			}else{
+				vOffsetX += (img.width - vowelsLen) / 2;
+
+				// Draw consonant
+				ctx.rect(cOffsetX, this.vowelsOffset, img.width, img.height);
+				ctx.drawImage(img, cOffsetX, this.vowelsOffset);
+				letterOffsetX += img.width + this.spacing.LetterSpacing;
+			}
+
+			// Draw vowels
+			for(let vImg of vowelsInRow){
+				ctx.rect(vOffsetX, 0, vImg.width, vImg.height);
+				ctx.drawImage(vImg, vOffsetX, 0);
+				vOffsetX += vImg.width + this.spacing.LetterSpacing;
+			}
+
+			vowelsInRow = [];
+			vowelsLen = 0;
+		}
+	}
+
+	/**
+	 * GetWordLength function (same as placeWord function but don't draw imgs and returns "carriage" position)
+	 */
+	this.getWordLength = function(word){
+		if(this.currWord != word){
+			this.currWord = word;
+			this.currWordArray = this.phoneticize(word);
+		}
+
+		const chType = {
+			Misc: 'misc',
+			Vowel: 'vowel',
+			Consonant: 'consonant',
+			None: 'none'
+		};
+		let letterOffsetX = 0;
+		let img;
+		let vowelsInRow = [];
+		let vowelsLen = 0;
+		
+		for(let ch of this.currWordArray){
+			img = this.imgs[ch];
+			
+			// Skip unregistered characters
+			if(img == undefined) continue;
+
+			// Set type of current character
+			let curCh;
+			if(find(ch, this.misc)) curCh = chType.Misc;
+			else if(find(ch, this.vowels)) curCh = chType.Vowel;
+			else curCh = chType.Consonant;
+
+			// Get length of character
+			switch(curCh){
+				case chType.Misc:
+					if(vowelsInRow.length > 0){
+						// Add sillent 'h'
+						img = this.imgs['h'];
+					
+						let cOffsetX = letterOffsetX;
+						let vOffsetX = letterOffsetX;
+					
+						// Remove last letter spacing
+						vowelsLen -= this.spacing.LetterSpacing;
+					
+						if(vowelsLen > img.width){
+							cOffsetX += (vowelsLen - img.width) / 2;
+
+							letterOffsetX += vowelsLen + this.spacing.LetterSpacing;
+						}else{
+							vOffsetX += (img.width - vowelsLen) / 2;
+
+							letterOffsetX += img.width + this.spacing.LetterSpacing;
+						}
+					
+						vowelsInRow = [];
+						vowelsLen = 0;
+
+						// reset img to misc ch
+						img = this.imgs[ch];
+					}
+
+					letterOffsetX += img.width + this.spacing.LetterSpacing;
+					break;
+				case chType.Vowel:
+					vowelsInRow.push(img);
+					vowelsLen += img.width + this.spacing.LetterSpacing;
+					break;
+				case chType.Consonant:
+
+					if(vowelsInRow.length > 0){
+						let cOffsetX = letterOffsetX;
+						let vOffsetX = letterOffsetX;
+
+						// Remove last letter spacing
+						vowelsLen -= this.spacing.LetterSpacing;
+
+						if(vowelsLen > img.width){
+							cOffsetX += (vowelsLen - img.width) / 2;
+							
+							letterOffsetX += vowelsLen + this.spacing.LetterSpacing;
+						}else{
+							vOffsetX += (img.width - vowelsLen) / 2;
+
+							letterOffsetX += img.width + this.spacing.LetterSpacing;
+						}
+
+						vowelsInRow = [];
+						vowelsLen = 0;
+						break;
+					}
+					
+					letterOffsetX += img.width + this.spacing.LetterSpacing;
+					break;
+				default: break;
+			}
+		}
+
+		// Get length of remaining vowels on end of the word
+		if(vowelsInRow.length > 0){
+			// Add sillent 'h'
+			img = this.imgs['h'];
+
+			let cOffsetX = letterOffsetX;
+			let vOffsetX = letterOffsetX;
+
+			// Remove last letter spacing
+			vowelsLen -= this.spacing.LetterSpacing;
+
+			if(vowelsLen > img.width){
+				cOffsetX += (vowelsLen - img.width) / 2;
+				
+				letterOffsetX += vowelsLen + this.spacing.LetterSpacing;
+			}else{
+				vOffsetX += (img.width - vowelsLen) / 2;
+
+				letterOffsetX += img.width + this.spacing.LetterSpacing;
+			}
+
+			// Get length of vowels
+			for(let vImg of vowelsInRow){
+				vOffsetX += vImg.width + this.spacing.LetterSpacing;
+			}
+
+			vowelsInRow = [];
+			vowelsLen = 0;
+		}
+
+		return letterOffsetX;
+	}
+
+	/**
+	 * GetWordHeight function
+	 */
+	this.getWordHeight = function(word){
+		let height = 0;
+		let img;
+
+		for(i in word){
+			img = this.imgs[word[i]];
+			if(img == undefined) continue;
+
+			let h = img.height + this.vowelsOffset;
+			if(h > height) height = h;
+		}
+		return height;
+	}
+
+	/**
+	 * GetwordHeightOffset
+	 */
+	this.getWordHeightOffset = function(word){
+		return 0;
+	}
+
+	/**
+	 * Returns word as array of language specyfic characters??
+	 */
+	this.literal = function(word){
+		var array = []
+		var found;
+		var a = 0;
+
+		/**
+		 * For each character in word swap to dialect character
+		 */
+		while(a < word.length){
+			found = false;
+			switch(word[a]){
+				case 'y':
+					array.push('ee');
+					break;
+				case 'w':
+					array.push('oo');
+					break;
+				case 'c':
+					if(!(a < word.length-1 && word[a+1] == 'h')){
+						array.push('k');
+						break;
+					}
+				default:
+					for(var b = 0; b < this.chars.length; b++){
+						if(this.chars[b] != word[a]) continue;
+
+						array.push(this.chars[b]);
+						a += this.chars[b].length;
+						found = true;
+						break;
+					}
+			}
+			
+			if(!found){
+				a++;
+			}
+		}
+
+		return array;
+	}
+
+	/**
+	 * Returns word as array of phoneticized characters
+	 */
+	this.phoneticize = function(word){ // return array of phoneticized chars, according to phoneticizeGuide.txt
+		var wordsArray = [];
+
+		/**
+		 * Not phonetic language
+		 */
 		if(!phonet){
 			wordsArray = this.literal(word);
 			return wordsArray;
